@@ -3,7 +3,9 @@
     <Layout>
       <Header>Header</Header>
       <Layout>
-        <Sider>Sider</Sider>
+        <Sider :width="240">
+          <WerdfSider></WerdfSider>
+        </Sider>
         <Layout>
           <Content>
             <router-view></router-view>
@@ -16,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import WerdfSider from '@/WerdfSider.vue';
 import { Content, Footer, Header, Layout, Sider } from 'view-ui-plus';
 </script>
 
