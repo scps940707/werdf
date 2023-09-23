@@ -166,9 +166,6 @@ import {
   Email,
 } from 'view-ui-plus';
 
-// const msg = ref<string>('123');
-// console.log(msg);
-
 const modalIsShow = ref(false); // modal是否為顯示
 const modalTitle = ref(''); // modal標題
 const modalIsAdd = ref(true); // true時modal為新增 false時modal為編輯
@@ -328,8 +325,6 @@ onMounted(async () => {
 
 //查詢
 function btnSearch() {
-  console.log(searchCondition);
-
   getPaginationData();
 }
 
@@ -395,7 +390,7 @@ async function btnDelectClick() {
   if (selectedDataId.length == 0) {
     //加入訊息
   } else {
-    console.log(await deleteSuppliers(selectedDataId));
+    await deleteSuppliers(selectedDataId);
     getPaginationData();
   }
 }
@@ -473,8 +468,6 @@ function selectAllCancel() {
 
 //核取方快全選
 function selectAll(selection: any[]) {
-  console.log(selection);
-
   selection.forEach(function (item) {
     selectedDataId.push(item.id);
   });
