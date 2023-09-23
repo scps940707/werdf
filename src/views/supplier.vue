@@ -5,32 +5,34 @@
       <div class="condition-block">
         <Space>
           <span>供應商</span>
-          <Input style="width: 360px" />
+          <Input v-model="searchCondition.supplier" style="width: 360px" />
         </Space>
         <Space>
           <label>統一編號</label>
-          <Input style="width: 180px" />
-        </Space>
+          <Input
+            v-model="searchCondition.unifiedBusinessNo"
+            style="width: 180px"
+        /></Space>
         <Space>
           <label>地址</label>
-          <Input style="width: 520px" />
+          <Input v-model="searchCondition.address" style="width: 520px" />
         </Space>
         <Space>
           <label>電子郵件</label>
-          <Input style="width: 260px" />
+          <Input v-model="searchCondition.email" style="width: 260px" />
         </Space>
         <Space>
           <label>負責人／聯絡人</label>
-          <Input style="width: 120px" />
+          <Input v-model="searchCondition.name" style="width: 120px" />
         </Space>
         <Space>
           <label>負責人電話／聯絡人電話</label>
-          <Input style="width: 120px" />
+          <Input v-model="searchCondition.phone" style="width: 120px" />
         </Space>
       </div>
       <div class="div-search">
-        <Button icon="md-search">查詢</Button>
-        <Button icon="md-backspace">重設</Button>
+        <Button @click="btnSearch" icon="md-search">查詢</Button>
+        <Button @click="btnReset" icon="md-backspace">重設</Button>
       </div>
       <!-- </div> -->
     </Card>
@@ -56,7 +58,19 @@
         ></Button>
       </template>
     </Table>
-    <Page class="page" :total="100" show-total show-sizer show-elevator />
+    <Page
+      class="page"
+      :model-value="searchCondition.page"
+      :total="total"
+      :page-size="searchCondition.pageSize"
+      @on-change="onChange"
+      @on-page-size-change="onPageSizeChange"
+      @on-prev="onPrev"
+      @on-next="onNext"
+      show-total
+      show-sizer
+      show-elevator
+    />
 
     <Modal
       v-model="modalIsShow"
@@ -120,9 +134,6 @@
         <FormItem label="備註" prop="remark">
           <Input v-model="supplier.remark"></Input>
         </FormItem>
-        <!-- <FormItem>
-          <Button type="primary">Signin</Button>
-        </FormItem> -->
       </Form>
       <template #footer>
         <Button @click="modelCancel">取消</Button>
@@ -134,9 +145,10 @@
 
 <script setup lang="ts">
 import expandRow from '@/views/supplierTabelRow.vue';
+import { Supplier, SearchCondition } from '@/types/supplier.ts';
 import {
   add as addSuppler,
-  getAll,
+  getPagination,
   updata as updataSupplier,
   deleteSuppliers,
 } from '@/apis/supplier-api.ts';
@@ -151,6 +163,7 @@ import {
   Space,
   Form,
   FormItem,
+  Email,
 } from 'view-ui-plus';
 
 // const msg = ref<string>('123');
@@ -162,7 +175,8 @@ const modalIsAdd = ref(true); // true時modal為新增 false時modal為編輯
 const data = ref([]);
 let selectedDataId: string[] = [];
 const formRef = ref();
-
+const searchCondition = reactive(new SearchCondition());
+const total = ref(0);
 const columns = [
   {
     type: 'selection',
@@ -196,6 +210,14 @@ const columns = [
   {
     title: '負責人電話',
     key: 'headPhone1',
+    render: (h, params: object) => {
+      const rowData = params.row;
+      if (rowData.headPhone1 == '') {
+        return rowData.headPhone2;
+      } else {
+        return rowData.headPhone1;
+      }
+    },
   },
   {
     title: '聯絡人',
@@ -204,6 +226,14 @@ const columns = [
   {
     title: '聯絡人電話',
     key: 'contactPersonPhone1',
+    render: (h, params: object) => {
+      const rowData = params.row;
+      if (rowData.contactPersonPhone1 == '') {
+        return rowData.contactPersonPhone2;
+      } else {
+        return rowData.contactPersonPhone1;
+      }
+    },
   },
   {
     title: '備註',
@@ -215,26 +245,7 @@ const columns = [
   },
 ];
 
-const supplier = reactive({
-  id: '',
-  creator: '',
-  updater: '',
-  remark: '',
-  isDeleted: false,
-  supplier: '',
-  unifiedBusinessNo: '',
-  email: '',
-  address1: '',
-  address2: '',
-  head: '',
-  headPhone1: '',
-  headPhone2: '',
-  contactPerson: '',
-  contactPersonPhone1: '',
-  contactPersonPhone2: '',
-  otherContact1: '',
-  otherContact2: '',
-});
+let supplier = reactive(new Supplier());
 
 const ruleValidate = {
   supplier: [
@@ -312,17 +323,58 @@ const ruleValidate = {
 };
 
 onMounted(async () => {
-  getInitData();
+  getPaginationData();
 });
+
+//查詢
+function btnSearch() {
+  console.log(searchCondition);
+
+  getPaginationData();
+}
+
+//重置查詢條件
+function btnReset() {
+  searchCondition.supplier = '';
+  searchCondition.unifiedBusinessNo = '';
+  searchCondition.address = '';
+  searchCondition.email = '';
+  searchCondition.phone = '';
+}
+
+//下一頁
+function onNext(nextPage: number) {
+  searchCondition.page = nextPage;
+  getPaginationData();
+}
+
+//上一頁
+function onPrev(prevPage: number) {
+  searchCondition.page = prevPage;
+  getPaginationData();
+}
+
+//每頁筆數變更
+function onPageSizeChange(pageSize: number) {
+  searchCondition.pageSize = pageSize;
+  getPaginationData();
+}
+
+//頁碼變更
+function onChange(page: number) {
+  searchCondition.page = page;
+  getPaginationData();
+}
 
 function modelCancel() {
   modalIsShow.value = false; //新增編輯完後 關閉視窗
 }
 
-async function getInitData() {
-  let result = await getAll();
-  //console.log(result.data);
-  data.value = result.data;
+async function getPaginationData() {
+  let result = await getPagination(searchCondition);
+  data.value = result.data.suppliers;
+  total.value = result.data.total;
+  // console.log(result.data.suppliers);
 }
 
 //核取方塊選擇時
@@ -344,7 +396,7 @@ async function btnDelectClick() {
     //加入訊息
   } else {
     console.log(await deleteSuppliers(selectedDataId));
-    getInitData();
+    getPaginationData();
   }
 }
 
@@ -374,7 +426,6 @@ function IsClickAddBtn(isAdd: boolean, index?: number) {
     supplier.supplier = rowData.supplier;
     supplier.unifiedBusinessNo = rowData.unifiedBusinessNo;
     supplier.updater = rowData.updater;
-    //console.log(data.value[index].address1);
   }
   modalIsShow.value = true;
 }
@@ -428,13 +479,6 @@ function selectAll(selection: any[]) {
     selectedDataId.push(item.id);
   });
 }
-
-//全選反選
-// function handleSelectAll(status: boolean) {
-//   console.log(status);
-
-//   this.$refs.selection.selectAll(status);
-// }
 </script>
 
 <style lang="scss" scoped>

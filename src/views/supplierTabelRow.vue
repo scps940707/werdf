@@ -1,47 +1,48 @@
 <template>
   <div>
-    <!-- <colgroup>
-        <col style="width: 15%" />
-        <col style="width: 20%" />
-        <col style="width: 10%" />
-        <col style="width: 55%" />
-      </colgroup> -->
-    <table class="table" style="width: 100%">
+    <table>
       <tr>
-        <td>電子郵件</td>
+        <th>負責人電話 1</th>
+        <td>{{ data.headPhone1 }}</td>
+        <th>負責人電話 2</th>
+        <td>{{ data.headPhone2 }}</td>
+      </tr>
+      <tr>
+        <th>聯絡人電話 1</th>
+        <td>{{ data.contactPersonPhone1 }}</td>
+        <th>聯絡人電話 2</th>
+        <td>{{ data.contactPersonPhone2 }}</td>
+      </tr>
+      <tr>
+        <th>電子郵件</th>
         <td colspan="3">
           {{ data.email }}
         </td>
       </tr>
-      <tr class="twoData">
-        <td>負責人電話 2</td>
-        <td>{{ data.headPhone2 }}</td>
-        <td>供應商地址 1</td>
-        <td>{{ data.address1 }}</td>
+      <tr>
+        <th>供應商地址 1</th>
+        <td colspan="3">{{ data.address1 }}</td>
       </tr>
       <tr>
-        <td>聯絡人電話 2</td>
-        <td>{{ data.contactPersonPhone2 }}</td>
-        <td>供應商地址2</td>
-        <td>{{ data.address2 }}</td>
+        <th>供應商地址 2</th>
+        <td colspan="3">{{ data.address2 }}</td>
       </tr>
       <tr>
-        <td>其他聯絡方式 1</td>
+        <th>其他聯絡方式 1</th>
         <td colspan="3">{{ data.otherContact1 }}</td>
       </tr>
       <tr>
-        <td>其他聯絡方式 2</td>
+        <th>其他聯絡方式 2</th>
         <td colspan="3">{{ data.otherContact2 }}</td>
       </tr>
       <tr>
-        <td>備註</td>
+        <th>備註</th>
         <td colspan="3">{{ data.remark }}</td>
       </tr>
     </table>
   </div>
 </template>
 <script setup lang="ts">
-import { Space } from 'view-ui-plus';
 
 const props = defineProps({
   row: Object,
@@ -49,9 +50,14 @@ const props = defineProps({
 
 const data = props.row;
 </script>
-<style>
-.table tr td:nth-child(odd) {
+
+<style lang="scss" scoped>
+table {
+  width: 100%;
+}
+
+table tr th {
   width: 150px;
-  background-color: red;
+  //background-color: red;
 }
 </style>

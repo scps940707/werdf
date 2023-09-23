@@ -19,3 +19,7 @@ export function updata(supplier: object) {
 export function deleteSuppliers(ids: string[]) {
   return axios.post('/api/supplier/deleteIds', ids);
 }
+
+export function getPagination(searchCondition: object) {
+  return axios.post('/api/supplier/getPagination', searchCondition);
+}
