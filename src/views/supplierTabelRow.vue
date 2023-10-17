@@ -43,7 +43,6 @@
   </div>
 </template>
 <script setup lang="ts">
-
 const props = defineProps({
   row: Object,
 });
