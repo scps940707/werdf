@@ -72,11 +72,11 @@
 </template>
 <script setup lang="ts">
 import { ref, reactive, watch, defineEmits } from 'vue';
-import { Input, Modal, Form, FormItem, Button } from 'view-ui-plus';
+import { Input, Modal, Form, FormItem, Button, Message } from 'view-ui-plus';
 import { Supplier } from '@/types/supplier.ts';
 import {
   add as addSuppler,
-  updata as updataSupplier,
+  update as updataSupplier,
 } from '@/apis/supplier-api.ts';
 
 const props = defineProps({
@@ -204,33 +204,43 @@ watch(
 watch(
   () => modalIsShow.value,
   (newModalIsShow) => {
-    console.log(newModalIsShow);
+    // console.log(newModalIsShow);
     emit('update:isShow', modalIsShow.value);
   }
 );
 
 //新增或編輯送出
-function btnClickOk() {
+async function btnClickOk() {
   formRef.value.validate(async (valid: boolean) => {
     if (valid) {
       if (modalIsAdd.value) {
         //新增
-        let test = await addSuppler(supplier);
-        if (test.status == 200) {
-          console.log('新增成功');
-          modalIsShow.value = false;
-        } else {
-          console.log('新增失敗');
-        }
+        await addSuppler(supplier)
+          .then((response) => {
+            modalIsShow.value = false;
+            printMessage('success', '新增成功');
+          })
+          .catch((error) => {
+            if (error.response && error.response.status === 400) {
+              printMessage('error', error.response.data);
+            } else {
+              console.error('Error:', error);
+            }
+          });
       } else {
         //編輯
-        let test = await updataSupplier(supplier);
-        if (test.status == 200) {
-          console.log('編輯成功');
-          modalIsShow.value = false;
-        } else {
-          console.log('編輯失敗');
-        }
+        await updataSupplier(supplier)
+          .then((response) => {
+            modalIsShow.value = false;
+            printMessage('success', '編輯成功');
+          })
+          .catch((error) => {
+            if (error.response && error.response.status === 400) {
+              printMessage('error', error.response.data);
+            } else {
+              console.error('Error:', error);
+            }
+          });
       }
     }
   });
@@ -244,6 +254,29 @@ function modelCancel() {
 function modalVisibleChange(showStatus: boolean) {
   if (!showStatus) {
     formRef.value.resetFields();
+  }
+}
+
+//訊息
+function printMessage(type: string, content: string) {
+  let modalObject = {
+    title: '訊息提示',
+    content: content,
+  };
+
+  switch (type) {
+    case 'info':
+      Modal.info(modalObject);
+      break;
+    case 'success':
+      Modal.success(modalObject);
+      break;
+    case 'warning':
+      Modal.warning(modalObject);
+      break;
+    case 'error':
+      Modal.error(modalObject);
+      break;
   }
 }
 </script>

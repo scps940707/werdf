@@ -12,8 +12,8 @@ export function getAll() {
   return axios.post('/api/supplier/getAll');
 }
 
-export function updata(supplier: object) {
-  return axios.post('/api/supplier/updata', supplier);
+export function update(supplier: object) {
+  return axios.post('/api/supplier/update', supplier);
 }
 
 export function deleteSuppliers(ids: string[]) {

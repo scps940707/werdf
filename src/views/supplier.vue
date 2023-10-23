@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Card style="display: flex">
+    <Card>
       <!-- <div style="display: flex"> -->
       <div class="condition-block">
         <Space>
@@ -38,7 +38,7 @@
     </Card>
 
     <Space class="div-add-trash">
-      <Button icon="md-add" @click="IsClickAddBtn(true)">新增</Button>
+      <Button icon="md-add" @click="isClickAddBtn(true)">新增</Button>
       <Button icon="md-trash" @click="btnDelectClick">刪除</Button>
     </Space>
 
@@ -54,7 +54,7 @@
         <Button
           icon="md-create"
           type="primary"
-          @click="IsClickAddBtn(false, index)"
+          @click="isClickAddBtn(false, index)"
         ></Button>
       </template>
     </Table>
@@ -86,7 +86,7 @@ import { SearchCondition } from '@/types/supplier.ts';
 import supplierModal from '@/views/supplierModal.vue';
 import { getPagination, deleteSuppliers } from '@/apis/supplier-api.ts';
 import { ref, reactive, onMounted, h } from 'vue';
-import { Input, Card, Button, Table, Page, Space } from 'view-ui-plus';
+import { Input, Card, Button, Table, Page, Space, Modal } from 'view-ui-plus';
 
 const isShow = ref(false); // modal是否為顯示
 const modalIsAdd = ref(true); // true時modal為新增 false時modal為編輯
@@ -207,9 +207,7 @@ function onChange(page: number) {
 }
 
 async function getPaginationData() {
-  // console.log(searchCondition);
   let result = await getPagination(searchCondition);
-  // console.log(result);
   data.value = result.data.suppliers;
   total.value = result.data.total;
 }
@@ -230,15 +228,20 @@ function checkboxCancel(selection: object, row: object) {
 //刪除
 async function btnDelectClick() {
   if (selectedDataId.length == 0) {
-    //加入訊息
+    printMessage('warning', '請勾選欲刪除資料');
   } else {
-    await deleteSuppliers(selectedDataId);
-    getPaginationData();
+    await deleteSuppliers(selectedDataId)
+      .then((response) => {
+        printMessage('success', '刪除成功');
+      })
+      .catch((error) => {
+        printMessage('warning', '刪除失敗');
+      });
   }
 }
 
 //點擊新增或修改按鈕
-function IsClickAddBtn(isAdd: boolean, index?: number) {
+function isClickAddBtn(isAdd: boolean, index?: number) {
   if (index != undefined) {
     rowData = data.value[index];
   }
@@ -258,9 +261,35 @@ function selectAll(selection: any[]) {
     selectedDataId.push(item.id);
   });
 }
+
+//訊息
+function printMessage(type: string, content: string) {
+  let modalObject = {
+    title: '訊息提示',
+    content: content,
+  };
+
+  switch (type) {
+    case 'info':
+      Modal.info(modalObject);
+      break;
+    case 'success':
+      Modal.success(modalObject);
+      break;
+    case 'warning':
+      Modal.warning(modalObject);
+      break;
+    case 'error':
+      Modal.error(modalObject);
+      break;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
+:deep(.ivu-card-body) {
+  display: flex;
+}
 .div-search {
   display: flex;
   align-items: center;
