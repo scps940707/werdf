@@ -226,17 +226,26 @@ function checkboxCancel(selection: object, row: object) {
 }
 
 //刪除
-async function btnDelectClick() {
+function btnDelectClick() {
   if (selectedDataId.length == 0) {
     printMessage('warning', '請勾選欲刪除資料');
   } else {
-    await deleteSuppliers(selectedDataId)
-      .then((response) => {
-        printMessage('success', '刪除成功');
-      })
-      .catch((error) => {
-        printMessage('warning', '刪除失敗');
-      });
+    Modal.confirm({
+      title: '是否刪除?',
+      content: '目前選取共 ' + selectedDataId.length + ' 筆',
+      onOk: async () => {
+        await deleteSuppliers(selectedDataId)
+          .then((response) => {
+            printMessage('success', '刪除成功');
+          })
+          .catch((error) => {
+            printMessage('warning', '刪除失敗');
+          });
+      },
+      onCancel: () => {
+        console.log('caancel');
+      },
+    });
   }
 }
 
