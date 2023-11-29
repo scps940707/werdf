@@ -4,7 +4,7 @@ export class Supplier {
   updater: string;
   remark: string;
   isDeleted: boolean;
-  supplier: string;
+  supplierName: string;
   unifiedBusinessNo: string;
   email: string;
   address1: string;
@@ -24,7 +24,7 @@ export class Supplier {
     this.updater = '';
     this.remark = '';
     this.isDeleted = false;
-    this.supplier = '';
+    this.supplierName = '';
     this.unifiedBusinessNo = '';
     this.email = '';
     this.address1 = '';

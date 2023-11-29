@@ -14,8 +14,8 @@
         :rules="ruleValidate"
         :show-message="true"
       >
-        <FormItem label="供應商" prop="supplier">
-          <Input v-model="supplier.supplier"></Input>
+        <FormItem label="供應商" prop="supplierName">
+          <Input v-model="supplier.supplierName"></Input>
         </FormItem>
         <div style="display: flex">
           <FormItem label="統一編號" prop="unifiedBusinessNo">
@@ -72,7 +72,7 @@
 </template>
 <script setup lang="ts">
 import { ref, reactive, watch, defineEmits } from 'vue';
-import { Input, Modal, Form, FormItem, Button, Message } from 'view-ui-plus';
+import { Input, Modal, Form, FormItem, Button } from 'view-ui-plus';
 import { Supplier } from '@/types/supplier.ts';
 import {
   add as addSuppler,
@@ -95,7 +95,7 @@ const modalTitle = ref(''); // modal標題
 const modalIsAdd = ref(true); // true時modal為新增 false時modal為編輯
 let supplier = reactive(new Supplier());
 const ruleValidate = {
-  supplier: [
+  supplierName: [
     { required: true, message: '欄位不可為空', trigger: 'blur' },
     { max: 30, message: '字數超出限制', trigger: 'blur' },
   ],
@@ -195,7 +195,7 @@ watch(
       supplier.otherContact1 = rowData.otherContact1;
       supplier.otherContact2 = rowData.otherContact2;
       supplier.remark = rowData.remark;
-      supplier.supplier = rowData.supplier;
+      supplier.supplierName = rowData.supplierName;
       supplier.unifiedBusinessNo = rowData.unifiedBusinessNo;
       supplier.updater = rowData.updater;
     }
@@ -203,7 +203,7 @@ watch(
 );
 watch(
   () => modalIsShow.value,
-  (newModalIsShow) => {
+  () => {
     // console.log(newModalIsShow);
     emit('update:isShow', modalIsShow.value);
   }
@@ -216,13 +216,15 @@ async function btnClickOk() {
       if (modalIsAdd.value) {
         //新增
         await addSuppler(supplier)
-          .then((response) => {
+          .then(() => {
             modalIsShow.value = false;
             printMessage('success', '新增成功');
           })
           .catch((error) => {
             if (error.response && error.response.status === 400) {
-              printMessage('error', error.response.data);
+              let errorMessage = modalErrorFormat(error.response.data.errors);
+              printMessage('error', errorMessage); //.net
+              //printMessage('error', error.response.data);//.java
             } else {
               console.error('Error:', error);
             }
@@ -230,13 +232,15 @@ async function btnClickOk() {
       } else {
         //編輯
         await updataSupplier(supplier)
-          .then((response) => {
+          .then(() => {
             modalIsShow.value = false;
             printMessage('success', '編輯成功');
           })
           .catch((error) => {
             if (error.response && error.response.status === 400) {
-              printMessage('error', error.response.data);
+              let errorMessage = modalErrorFormat(error.response.data.errors);
+              printMessage('error', errorMessage); //.net
+              //printMessage('error', error.response.data);//java
             } else {
               console.error('Error:', error);
             }
@@ -278,5 +282,22 @@ function printMessage(type: string, content: string) {
       Modal.error(modalObject);
       break;
   }
+}
+
+//後端modal回傳驗證錯誤訊息格式化
+function modalErrorFormat(errors: any) {
+  let errorsKeyLen = Object.keys(errors).length;
+  let output = '';
+  let currentIndex = 0;
+  for (const key in errors) {
+    currentIndex++;
+    if (Object.hasOwnProperty.call(errors, key)) {
+      output += errors[key][0];
+      if (currentIndex != errorsKeyLen) {
+        output += '，';
+      }
+    }
+  }
+  return output;
 }
 </script>

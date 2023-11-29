@@ -84,6 +84,7 @@
 import expandRow from '@/views/supplierTabelRow.vue';
 import { SearchCondition } from '@/types/supplier.ts';
 import supplierModal from '@/views/supplierModal.vue';
+import werdConfirm from '@/views/WerdConfirm.vue';
 import { getPagination, deleteSuppliers } from '@/apis/supplier-api.ts';
 import { ref, reactive, onMounted, h } from 'vue';
 import { Input, Card, Button, Table, Page, Space, Modal } from 'view-ui-plus';
@@ -114,7 +115,7 @@ const columns = [
   // },
   {
     title: '供應商',
-    key: 'supplier',
+    key: 'supplierName',
   },
   {
     title: '統一編號',
@@ -207,6 +208,16 @@ function onChange(page: number) {
 }
 
 async function getPaginationData() {
+  if (
+    searchCondition.address != '' ||
+    searchCondition.email != '' ||
+    searchCondition.name != '' ||
+    searchCondition.phone != '' ||
+    searchCondition.supplier != '' ||
+    searchCondition.unifiedBusinessNo != ''
+  ) {
+    searchCondition.page = 1;
+  }
   let result = await getPagination(searchCondition);
   data.value = result.data.suppliers;
   total.value = result.data.total;
@@ -242,9 +253,9 @@ function btnDelectClick() {
             printMessage('warning', '刪除失敗');
           });
       },
-      onCancel: () => {
-        console.log('caancel');
-      },
+      // onCancel: () => {
+      //   console.log('caancel');
+      // },
     });
   }
 }
@@ -253,6 +264,7 @@ function btnDelectClick() {
 function isClickAddBtn(isAdd: boolean, index?: number) {
   if (index != undefined) {
     rowData = data.value[index];
+    console.log(rowData);
   }
 
   isShow.value = true;
