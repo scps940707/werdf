@@ -77,19 +77,31 @@
       :isAdd="modalIsAdd"
       :rowData="rowData"
     />
+
+    <werdAlert
+      v-model:is-show="alertIsShow"
+      :title="alertObj.title"
+      :content="alertObj.content"
+      :type="alertObj.type"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import expandRow from '@/views/supplierTabelRow.vue';
+import expandRow from '@/views/SupplierTabelRow.vue';
 import { SearchCondition } from '@/types/supplier.ts';
-import supplierModal from '@/views/supplierModal.vue';
-import werdConfirm from '@/views/WerdConfirm.vue';
+import supplierModal from '@/views/SupplierModal.vue';
+import werdAlert from '@/views/WerpAlert.vue';
 import { getPagination, deleteSuppliers } from '@/apis/supplier-api.ts';
 import { ref, reactive, onMounted, h } from 'vue';
 import { Input, Card, Button, Table, Page, Space, Modal } from 'view-ui-plus';
-
-const isShow = ref(false); // modal是否為顯示
+const alertIsShow = ref(false);
+const alertObj = {
+  title: '',
+  content: '',
+  type: '',
+};
+const isShow = ref(false); // 新增編輯modal是否為顯示
 const modalIsAdd = ref(true); // true時modal為新增 false時modal為編輯
 const data = ref([]);
 let selectedDataId: string[] = [];
@@ -219,7 +231,21 @@ async function getPaginationData() {
     searchCondition.page = 1;
   }
   let result = await getPagination(searchCondition);
-  data.value = result.data.suppliers;
+  data.value = result.data.suppliers.map(function (obj: object) {
+    var newObj = {};
+    Object.keys(obj).forEach((key: string) => {
+      newObj[key] = obj[key];
+      if (key == 'id') {
+        if (selectedDataId.includes(obj['id'])) {
+          newObj['_checked'] = true;
+        } else {
+          newObj['_checked'] = false;
+        }
+      }
+    });
+    return newObj;
+  });
+
   total.value = result.data.total;
 }
 
@@ -239,7 +265,7 @@ function checkboxCancel(selection: object, row: object) {
 //刪除
 function btnDelectClick() {
   if (selectedDataId.length == 0) {
-    printMessage('warning', '請勾選欲刪除資料');
+    printMessage('warning', '提示', '請勾選欲刪除資料');
   } else {
     Modal.confirm({
       title: '是否刪除?',
@@ -247,15 +273,15 @@ function btnDelectClick() {
       onOk: async () => {
         await deleteSuppliers(selectedDataId)
           .then((response) => {
-            printMessage('success', '刪除成功');
+            printMessage('success', '提示', '刪除成功');
           })
           .catch((error) => {
-            printMessage('warning', '刪除失敗');
+            printMessage('warning', '提示', '刪除失敗');
           });
       },
-      // onCancel: () => {
-      //   console.log('caancel');
-      // },
+      onCancel: () => {
+        console.log('caancel');
+      },
     });
   }
 }
@@ -264,7 +290,6 @@ function btnDelectClick() {
 function isClickAddBtn(isAdd: boolean, index?: number) {
   if (index != undefined) {
     rowData = data.value[index];
-    console.log(rowData);
   }
 
   isShow.value = true;
@@ -284,26 +309,30 @@ function selectAll(selection: any[]) {
 }
 
 //訊息
-function printMessage(type: string, content: string) {
-  let modalObject = {
-    title: '訊息提示',
-    content: content,
-  };
+function printMessage(type: string, title: string, content: string) {
+  alertIsShow.value = true;
+  alertObj.type = type;
+  alertObj.title = title;
+  alertObj.content = content;
 
-  switch (type) {
-    case 'info':
-      Modal.info(modalObject);
-      break;
-    case 'success':
-      Modal.success(modalObject);
-      break;
-    case 'warning':
-      Modal.warning(modalObject);
-      break;
-    case 'error':
-      Modal.error(modalObject);
-      break;
-  }
+  // let modalObject = {
+  //   title: '訊息提示',
+  //   content: content,
+  // };
+  // switch (type) {
+  //   case 'info':
+  //     Modal.info(modalObject);
+  //     break;
+  //   case 'success':
+  //     Modal.success(modalObject);
+  //     break;
+  //   case 'warning':
+  //     Modal.warning(modalObject);
+  //     break;
+  //   case 'error':
+  //     Modal.error(modalObject);
+  //     break;
+  // }
 }
 </script>
 
